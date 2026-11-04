@@ -1,0 +1,6 @@
+[package]
+name = "rpc-mir"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Mid-level IR: CFG, basic blocks, SSA-like values"

@@ -1,0 +1,6 @@
+[package]
+name = "rpc-backend"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "MIR -> AMX: lowering, instruction selection, stack layout, emit"

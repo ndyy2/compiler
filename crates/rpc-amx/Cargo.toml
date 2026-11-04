@@ -1,0 +1,9 @@
+[package]
+name = "rpc-amx"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "AMX binary format: instructions, encoding, header, tables, writer"
+
+[dependencies]
+thiserror.workspace = true

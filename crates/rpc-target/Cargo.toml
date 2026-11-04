@@ -1,0 +1,6 @@
+[package]
+name = "rpc-target"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Target profiles: SA-MP, open.mp"

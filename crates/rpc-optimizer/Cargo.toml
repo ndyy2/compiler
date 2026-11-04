@@ -1,0 +1,6 @@
+[package]
+name = "rpc-optimizer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Pass manager and optimization passes"

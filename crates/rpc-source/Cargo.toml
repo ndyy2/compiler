@@ -1,0 +1,6 @@
+[package]
+name = "rpc-source"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Source files, spans, source manager"

@@ -1,0 +1,6 @@
+[package]
+name = "rpc-test"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Test helpers: fixtures, differential testing"

@@ -1,0 +1,6 @@
+[package]
+name = "rpc-lexer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Pawn lexer"

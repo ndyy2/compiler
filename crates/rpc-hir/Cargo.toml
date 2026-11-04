@@ -1,0 +1,6 @@
+[package]
+name = "rpc-hir"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "High-level IR: typed, resolved program"

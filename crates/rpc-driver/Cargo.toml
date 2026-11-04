@@ -1,0 +1,6 @@
+[package]
+name = "rpc-driver"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Compilation driver: wires frontend through backend"

@@ -1,0 +1,6 @@
+[package]
+name = "rpc-preprocessor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Pawn preprocessor: macros, includes, conditional compilation"

@@ -1,0 +1,6 @@
+[package]
+name = "rpc-semantic"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Semantic engine: symbols, types/tags, validation"
