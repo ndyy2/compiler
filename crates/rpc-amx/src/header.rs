@@ -1,17 +1,21 @@
 //! AMX file header — explicit little-endian serialization.
 //!
-//! Layout matches `tagAMX_HEADER` in `compuphase/pawn amx/amx.h` (60 bytes,
-//! packed, little-endian on x86/ARM targets). We never transmute or copy the
-//! native struct; every field is written field-by-field so endianness,
-//! alignment and sizes stay under our control.
+//! Layout matches `tagAMX_HEADER` in the 3.10.x `amx/amx.h` (56 bytes, 17
+//! fields, packed, little-endian). The **legacy / open.mp-compatible** profile
+//! has NO `overlays` field (that field appears only in the newer compuphase
+//! v10+ header). We never transmute or copy the native struct; every field is
+//! written field-by-field so endianness, alignment and sizes stay under our
+//! control.
+//!
+//! Verified byte-for-byte against `pawncc 3.10.11 -C-` (uncompressed) output.
 
-use crate::instruction::{DEF_SIZE_32, AMX_MAGIC_32};
+use crate::instruction::{FUNCSTUB_SIZE, AMX_MAGIC_32};
 
-/// AMX file header (memory format == file format).
+/// AMX file header (memory format == file format), 3.10.x legacy layout.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct AmxHeader {
-    pub size: i32,      // size of the "file"
-    pub magic: u16,     // signature (0xf1e0 for 32-bit cells)
+    pub size: i32,
+    pub magic: u16,
     pub file_version: u8,
     pub amx_version: u8,
     pub flags: i16,
@@ -27,14 +31,13 @@ pub struct AmxHeader {
     pub pubvars: i32,
     pub tags: i32,
     pub nametable: i32,
-    pub overlays: i32,
 }
 
-/// Size of the on-disk header in bytes.
-pub const HEADER_SIZE: usize = 60;
+/// Size of the on-disk header in bytes (3.10.x legacy: 17 fields, no overlays).
+pub const HEADER_SIZE: usize = 56;
 
 impl AmxHeader {
-    /// Serialize all 18 fields, little-endian, in declaration order.
+    /// Serialize all 17 fields, little-endian, in declaration order.
     pub fn encode_le(&self, out: &mut Vec<u8>) {
         let before = out.len();
         out.extend_from_slice(&self.size.to_le_bytes());
@@ -44,63 +47,64 @@ impl AmxHeader {
         out.extend_from_slice(&self.flags.to_le_bytes());
         out.extend_from_slice(&self.defsize.to_le_bytes());
         for f in [self.cod, self.dat, self.hea, self.stp, self.cip, self.publics,
-            self.natives, self.libraries, self.pubvars, self.tags, self.nametable,
-            self.overlays] {
+            self.natives, self.libraries, self.pubvars, self.tags, self.nametable] {
             out.extend_from_slice(&f.to_le_bytes());
         }
         assert_eq!(out.len() - before, HEADER_SIZE);
     }
 
-    /// Parse from a byte slice; returns `None` if fewer than 60 bytes.
+    /// Parse from a byte slice; returns `None` if fewer than 56 bytes.
     pub fn decode_le(bytes: &[u8]) -> Option<AmxHeader> {
-        fn read_i32(b: &[u8]) -> Option<i32> {
+        fn i32(b: &[u8]) -> Option<i32> {
             Some(i32::from_le_bytes(b.try_into().ok()?))
         }
         if bytes.len() < HEADER_SIZE {
             return None;
         }
         Some(AmxHeader {
-            size: read_i32(&bytes[0..4])?,
+            size: i32(&bytes[0..4])?,
             magic: u16::from_le_bytes(bytes[4..6].try_into().ok()?),
             file_version: bytes[6],
             amx_version: bytes[7],
             flags: i16::from_le_bytes(bytes[8..10].try_into().ok()?),
             defsize: i16::from_le_bytes(bytes[10..12].try_into().ok()?),
-            cod: read_i32(&bytes[12..16])?,
-            dat: read_i32(&bytes[16..20])?,
-            hea: read_i32(&bytes[20..24])?,
-            stp: read_i32(&bytes[24..28])?,
-            cip: read_i32(&bytes[28..32])?,
-            publics: read_i32(&bytes[32..36])?,
-            natives: read_i32(&bytes[36..40])?,
-            libraries: read_i32(&bytes[40..44])?,
-            pubvars: read_i32(&bytes[44..48])?,
-            tags: read_i32(&bytes[48..52])?,
-            nametable: read_i32(&bytes[52..56])?,
-            overlays: read_i32(&bytes[56..60])?,
+            cod: i32(&bytes[12..16])?,
+            dat: i32(&bytes[16..20])?,
+            hea: i32(&bytes[20..24])?,
+            stp: i32(&bytes[24..28])?,
+            cip: i32(&bytes[28..32])?,
+            publics: i32(&bytes[32..36])?,
+            natives: i32(&bytes[36..40])?,
+            libraries: i32(&bytes[40..44])?,
+            pubvars: i32(&bytes[44..48])?,
+            tags: i32(&bytes[48..52])?,
+            nametable: i32(&bytes[52..56])?,
         })
     }
 }
 
-/// Header for a fresh 32-bit (SA-MP / open.mp compatible) AMX image with no
-/// optional tables. `cod`/`dat`/`cip` expect a 60-byte header followed by the
-/// code segment.
+/// Header for a fresh 32-bit legacy (SA-MP / open.mp compatible) AMX image.
+///
+/// `file_version=8, amx_version=8` is the JIT-compatible, maximum-legacy
+/// profile (the version `pawncc 3.10.x` emits by default at `-O0`/`-O1`).
+/// `cod`/`dat`/`cip` assume a 56-byte header followed by the tables and then
+/// the code segment. Callers fill the table offsets in before writing.
 pub fn legacy32_header(code_bytes: usize, data_bytes: usize) -> AmxHeader {
     let cod = HEADER_SIZE as i32;
     let dat = HEADER_SIZE as i32 + code_bytes as i32;
     AmxHeader {
         size: (HEADER_SIZE + code_bytes + data_bytes) as i32,
         magic: AMX_MAGIC_32,
-        file_version: 0, // legacy profile; bump per target profile
-        amx_version: 0,
+        file_version: 8,
+        amx_version: 8,
         flags: 0,
-        defsize: DEF_SIZE_32,
+        defsize: FUNCSTUB_SIZE as i16,
         cod,
         dat,
         hea: dat,
         stp: dat + data_bytes as i32,
         cip: cod,
-        // 0 = absent tables
+        // 0 = absent tables (caller overrides)
         ..Default::default()
     }
 }
@@ -111,7 +115,9 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        let h = legacy32_header(100, 16);
+        let mut h = legacy32_header(100, 16);
+        h.publics = 56;
+        h.nametable = 64;
         let mut buf = Vec::new();
         h.encode_le(&mut buf);
         assert_eq!(buf.len(), HEADER_SIZE);
@@ -123,17 +129,19 @@ mod tests {
     fn legacy_layout_offsets() {
         let h = legacy32_header(100, 16);
         assert_eq!(h.magic, 0xf1e0);
-        assert_eq!(h.cod, 60);
-        assert_eq!(h.dat, 160);
-        assert_eq!(h.hea, 160);
-        assert_eq!(h.stp, 176);
-        assert_eq!(h.cip, 60);
-        assert_eq!(h.size, 60 + 100 + 16);
+        assert_eq!(h.file_version, 8);
+        assert_eq!(h.amx_version, 8);
+        assert_eq!(h.cod, 56);
+        assert_eq!(h.dat, 156);
+        assert_eq!(h.hea, 156);
+        assert_eq!(h.stp, 172);
+        assert_eq!(h.cip, 56);
+        assert_eq!(h.size, 56 + 100 + 16);
         assert_eq!(h.defsize, 8);
     }
 
     #[test]
     fn decode_short_input() {
-        assert!(AmxHeader::decode_le(&[0u8; 59]).is_none());
+        assert!(AmxHeader::decode_le(&[0u8; 55]).is_none());
     }
 }

@@ -37,6 +37,15 @@ smallvec = "1"
 bumpalo = "3"
 clap = { version = "4", features = ["derive"] }
 codespan-reporting = "0.12"
+rpc-lexer = { path = "crates/rpc-lexer" }
+rpc-parser = { path = "crates/rpc-parser" }
+rpc-ast = { path = "crates/rpc-ast" }
+rpc-amx = { path = "crates/rpc-amx" }
+rpc-backend = { path = "crates/rpc-backend" }
+rpc-driver = { path = "crates/rpc-driver" }
+rpc-test = { path = "crates/rpc-test" }
+
+
 
 [profile.release]
 lto = "thin"

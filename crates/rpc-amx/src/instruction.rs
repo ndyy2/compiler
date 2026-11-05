@@ -191,13 +191,23 @@ pub fn opinfo(raw: u8) -> Option<OpInfo> {
 /// Highest file version this opcode table describes (per amx.h CUR_FILE_VERSION).
 pub const MAX_FILE_VERSION: u8 = 11;
 
-/// Size of a symbol-table definition record for 32-bit cells (nameofs + value).
-pub const DEF_SIZE_32: i16 = 8;
+/// Size of a symbol-table definition record (`AMX_FUNCSTUBNT`: address +
+/// nameofs), 32-bit cells.
+pub const FUNCSTUB_SIZE: u16 = 8;
 
 /// AMX magic numbers by cell size (amx.h).
 pub const AMX_MAGIC_16: u16 = 0xf1e2;
 pub const AMX_MAGIC_32: u16 = 0xf1e0;
 pub const AMX_MAGIC_64: u16 = 0xf1e1;
+
+/// Header flag bits — 3.10.x `amx.h` values (NOTE: bit positions differ from
+/// the newer compuphase main branch; this is the legacy target's layout).
+pub mod flag {
+    pub const DEBUG: i16 = 0x02; // symbolic info available
+    pub const COMPACT: i16 = 0x04; // compact (7-bit) cell encoding
+    pub const SLEEP: i16 = 0x08; // script uses the sleep instruction
+    pub const NOCHECKS: i16 = 0x10; // no bounds checks; no BREAK opcodes
+}
 
 #[cfg(test)]
 mod tests {

@@ -34,10 +34,17 @@ version = "0.1.0"
 [[package]]
 name = "rpc-backend"
 version = "0.1.0"
+dependencies = [
+ "rpc-amx",
+ "rpc-ast",
+]
 
 [[package]]
 name = "rpc-cli"
 version = "0.1.0"
+dependencies = [
+ "rpc-driver",
+]
 
 [[package]]
 name = "rpc-core"
@@ -54,6 +61,11 @@ version = "0.1.0"
 [[package]]
 name = "rpc-driver"
 version = "0.1.0"
+dependencies = [
+ "rpc-amx",
+ "rpc-backend",
+ "rpc-parser",
+]
 
 [[package]]
 name = "rpc-hir"
@@ -74,6 +86,10 @@ version = "0.1.0"
 [[package]]
 name = "rpc-parser"
 version = "0.1.0"
+dependencies = [
+ "rpc-ast",
+ "rpc-lexer",
+]
 
 [[package]]
 name = "rpc-preprocessor"
@@ -94,6 +110,9 @@ version = "0.1.0"
 [[package]]
 name = "rpc-test"
 version = "0.1.0"
+dependencies = [
+ "rpc-driver",
+]
 
 [[package]]
 name = "syn"

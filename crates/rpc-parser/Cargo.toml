@@ -4,3 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Pawn parser"
+
+[dependencies]
+rpc-lexer.workspace = true
+rpc-ast.workspace = true

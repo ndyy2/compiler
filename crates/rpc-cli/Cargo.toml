@@ -4,3 +4,6 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "CLI entrypoint (binary: rpc)"
+
+[dependencies]
+rpc-driver.workspace = true
